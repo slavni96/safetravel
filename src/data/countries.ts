@@ -68,12 +68,15 @@ const countries: CountriesCollection = {
 
 const metaByNumeric = new Map<string, CountryMeta>()
 const metaByName = new Map<string, CountryMeta>()
+const metaByCca3 = new Map<string, CountryMeta>()
 ;(countriesDataset as CountryMeta[]).forEach((country) => {
   if (country.ccn3) {
     metaByNumeric.set(String(parseInt(country.ccn3, 10)), country)
   }
   metaByName.set(country.name.common.toLowerCase(), country)
   metaByName.set(country.name.official.toLowerCase(), country)
+  if (country.cca2) metaByCca3.set(country.cca2.toUpperCase(), country)
+  if ((country as any).cca3) metaByCca3.set((country as any).cca3.toUpperCase(), country)
 })
 
-export { countries, metaByName, metaByNumeric }
+export { countries, metaByName, metaByNumeric, metaByCca3 }

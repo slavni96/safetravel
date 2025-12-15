@@ -7,12 +7,16 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate:requirements": "node scripts/generate-entry-data.js",
+    "classify:requirements": "node scripts/classify-entry-data.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
     "@types/leaflet": "^1.9.21",
+    "cheerio": "^1.1.2",
     "leaflet": "^1.9.4",
+    "playwright-chromium": "^1.49.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-leaflet": "^5.0.0",

@@ -3,17 +3,19 @@ import * as Dialog from '@radix-ui/react-dialog'
 
 import StatList from '../molecules/StatList'
 import type { Selection } from '../../types/country'
+import type { EntryResult } from '../../types/entry'
 import { formatStat } from '../../utils/format'
 
 type CountrySheetProps = {
   selection: Selection | null
+  entryInfo?: EntryResult
   open: boolean
   onClose: () => void
 }
 
 type SheetMode = 'compact' | 'mid' | 'expanded'
 
-const CountrySheet = ({ selection, open, onClose }: CountrySheetProps) => {
+const CountrySheet = ({ selection, entryInfo, open, onClose }: CountrySheetProps) => {
   const isOpen = open && Boolean(selection)
   const { feature, meta } = selection ?? {}
   const snapPoints: Record<SheetMode, number> = { compact: 38, mid: 52, expanded: 72 }
@@ -164,6 +166,36 @@ const CountrySheet = ({ selection, open, onClose }: CountrySheetProps) => {
           </div>
 
           <div className="sheet__body">
+            {entryInfo ? (
+              <div className="entry-summary">
+                <div className="entry-source">
+                  <span
+                    className="entry-dot"
+                    style={{ background: entryInfo.color ? entryInfo.color : '#9ca3af' }}
+                  />
+                  <span>Source</span>
+                  {entryInfo.source ? (
+                    <a href={entryInfo.source} target="_blank" rel="noreferrer">
+                      {entryInfo.source}
+                    </a>
+                  ) : (
+                    <span>Unavailable</span>
+                  )}
+                </div>
+                {entryInfo.visaText ? (
+                  <div className="entry-block">
+                    <p className="eyebrow">Visa / Entry</p>
+                    <p className="entry-text">{entryInfo.visaText}</p>
+                  </div>
+                ) : null}
+                {entryInfo.healthText ? (
+                  <div className="entry-block">
+                    <p className="eyebrow">Health / Vaccines</p>
+                    <p className="entry-text">{entryInfo.healthText}</p>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             <StatList items={stats} />
             <p className="note">Pan, zoom, and tap any country to spotlight it on the map.</p>
           </div>

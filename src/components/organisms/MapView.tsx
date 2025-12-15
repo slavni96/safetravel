@@ -1,5 +1,5 @@
 import L, { type Map as LeafletMap, type Path, type PathOptions } from 'leaflet'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { GeoJSON, MapContainer, TileLayer, ZoomControl } from 'react-leaflet'
 
 import { colorForFeature } from '../../utils/colors'
@@ -9,9 +9,15 @@ type CountryLayerProps = {
   data: CountriesCollection
   selectedId?: string
   onSelect: (feature: CountryFeature) => void
+  colorByIso?: Record<string, string>
 }
 
-const CountryLayer = ({ data, selectedId, onSelect }: CountryLayerProps) => {
+const CountryLayer = ({ data, selectedId, onSelect, colorByIso }: CountryLayerProps) => {
+  const colorRef = useRef(colorByIso)
+  useEffect(() => {
+    colorRef.current = colorByIso
+  }, [colorByIso])
+
   const baseStyle = useCallback(
     (feature?: CountryFeature): PathOptions => {
       const isSelected =
@@ -19,10 +25,13 @@ const CountryLayer = ({ data, selectedId, onSelect }: CountryLayerProps) => {
         (feature?.properties.isoNumeric === selectedId ||
           (feature?.id ? String(feature.id) : undefined) === selectedId)
 
+      const iso = feature?.properties.isoNumeric ?? (feature?.id ? String(feature.id) : undefined)
+      const overrideColor = iso ? colorRef.current?.[iso] : undefined
+
       return {
         weight: isSelected ? 2 : 1,
         color: isSelected ? '#0a84ff' : 'rgba(49, 80, 122, 0.35)',
-        fillColor: feature ? colorForFeature(feature) : '#e5edff',
+        fillColor: overrideColor ?? (feature ? colorForFeature(feature) : '#e5edff'),
         fillOpacity: isSelected ? 0.62 : 0.42,
         lineJoin: 'round',
       }
@@ -56,14 +65,16 @@ type MapViewProps = {
   countries: CountriesCollection
   selected?: Selection | null
   onSelect: (feature: CountryFeature) => void
+  colorByIso?: Record<string, string>
 }
 
-const MapView = ({ countries, selected, onSelect }: MapViewProps) => {
+const MapView = ({ countries, selected, onSelect, colorByIso }: MapViewProps) => {
   const mapRef = useRef<LeafletMap | null>(null)
   const maxBounds: L.LatLngBoundsExpression = [
     [-60, -178],
     [80, 178],
   ]
+  const colorVersion = useMemo(() => JSON.stringify(colorByIso ?? {}), [colorByIso])
 
   const selectedKey =
     selected?.feature.properties.isoNumeric ??
@@ -120,7 +131,13 @@ const MapView = ({ countries, selected, onSelect }: MapViewProps) => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             noWrap
           />
-          <CountryLayer data={countries} onSelect={onSelect} selectedId={selectedKey} />
+          <CountryLayer
+            key={colorVersion}
+            data={countries}
+            onSelect={onSelect}
+            selectedId={selectedKey}
+            colorByIso={colorByIso}
+          />
           <ZoomControl position="bottomright" />
         </MapContainer>
       </div>
